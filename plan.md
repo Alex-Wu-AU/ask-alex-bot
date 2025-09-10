@@ -1,106 +1,132 @@
 # 📝 Ask Alex Bot Development Plan (`plan.md`)
 
-This is a **step-by-step TODO list** for building `ask-alex-bot`.  
-Each step includes:
+Step-by-step TODO list to build `ask-alex-bot`. Keep this concise; core policies live in `gpt.md`.
 
-- **Task**
-- **Operable AI prompt**
-- **Test instructions**
-- **Documentation update reminder**
+Each step lists:
 
-Follow each step to reproduce the chatbot workflow.
+- Task
+- Operable AI prompt
+- Test instructions
+- Documentation reminder
 
----
-
-## Stage 1 – MVP (FastAPI + OpenAI)
-
-- [ ] **Create FastAPI skeleton**  
-      **Prompt:** Generate a FastAPI project skeleton for a chatbot named "Ask Alex" with Python 3.11, uvicorn entry point, a `/ask` POST endpoint that receives a question, placeholder response "Hello, Ask Alex is working", and folder structure ready for future AI integration.  
-      **Test:** POST `{"question":"test"}` to `/ask` → expect `"Hello, Ask Alex is working"`.  
-      **Documentation Reminder:** After completing this step, update `STATUS.md` and `gpt.md` with today’s date.
-
-- [ ] **Integrate OpenAI GPT API**  
-      **Prompt:** Add OpenAI GPT integration to `/ask` endpoint using `gpt-3.5-turbo`. Return a fixed placeholder answer for now. Use environment variable `OPENAI_API_KEY`.  
-      **Test:** Send POST request with sample question → confirm API call is made and a response is returned.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md` with today’s date and note API integration.
-
-- [ ] **Add Dockerfile**  
-      **Prompt:** Generate a Dockerfile for the FastAPI project with Python 3.11, installing dependencies, setting working directory, and running uvicorn on container start.  
-      **Test:** Build and run Docker container → POST to `/ask` → verify response.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md` with today’s date.
-
-- [ ] **Add basic README.md**  
-      **Prompt:** Create README.md with project description, installation instructions, running instructions, and placeholder for future stages.  
-      **Test:** Run `uvicorn app.main:app --reload` → verify server starts correctly.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md` with today’s date.
+Update `STATUS.md` after each completed item.
 
 ---
 
-## Stage 2 – Sheet Integration + Semantic Matching
+## Conventions Quick Reference
 
-- [ ] **Add Google Sheet / CSV integration**  
-      **Prompt:** Generate Python code to read a Google Sheet or CSV containing columns: Category, Content/Link, Tutor Name, Tutor Email. Store data in memory as a list of dictionaries.  
-      **Test:** Add 2-3 sample rows → fetch data → confirm correct rows and fields loaded.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
-
-- [ ] **Compute embeddings for posts**  
-      **Prompt:** Generate embeddings for each post’s Content/Link using OpenAI `text-embedding-3-small` and store embeddings alongside original rows.  
-      **Test:** Verify each post has a non-empty embedding vector → print shape and length.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
-
-- [ ] **Semantic search endpoint**  
-      **Prompt:** Update `/ask` endpoint to receive a student question, generate its embedding, compute cosine similarity with all post embeddings, and return the Content/Link of the post with highest similarity.  
-      **Test:** Send a test question → verify returned post matches expected closest post.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
-
-- [ ] **Similarity threshold and fallback**  
-      **Prompt:** If highest similarity < 0.8, retrieve the corresponding tutor for the question category and return message: "No official post found. Please contact {Tutor Name} ({Tutor Email})".  
-      **Test:** Send unrelated question → verify bot returns correct tutor info.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- File / function names: snake_case
+- Models (Pydantic / classes): PascalCase
+- Constants / env vars: UPPER_SNAKE (e.g. ANSWER_THRESHOLD, CATEGORY_THRESHOLD)
+- Branch naming: stageN-short-desc (e.g. stage2-embeddings)
+- Default thresholds: ANSWER_THRESHOLD=0.80, CATEGORY_THRESHOLD=0.60
 
 ---
 
-## Stage 3 – Logging & Analytics
+## Stage 1 – FastAPI Skeleton (Complete)
 
-- [ ] **Log questions and responses**  
-      **Prompt:** Save each question, returned post, similarity score, and timestamp to JSON/CSV or optional MongoDB/Postgres.  
-      **Test:** Ask 2-3 questions → check log file or DB contains correct question, answer, score, and timestamp.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [x] **Create FastAPI skeleton**  
+       **Prompt:** Generate minimal FastAPI project with `/ask` POST endpoint returning placeholder JSON `{"message":"Hello, Ask Alex is working", "source_type":"placeholder"}`.  
+       **Test:** POST `{ "question":"test" }` → verify placeholder response.  
+       **Docs:** Update `STATUS.md` (mark Stage 1 complete).
 
-- [ ] **Analytics endpoint**  
-      **Prompt:** Generate `/stats` endpoint summarizing number of questions by category and top 5 most asked questions.  
-      **Test:** Send multiple questions across categories → GET `/stats` → verify counts and top questions.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [x] **Basic README & requirements**  
+       **Prompt:** Provide README summary (purpose, run instructions) + minimal requirements (fastapi, uvicorn, pydantic).  
+       **Test:** Fresh clone + install + run works.  
+       **Docs:** `STATUS.md` updated.
+
+(Any OpenAI logic deferred to Stage 2.)
+
+---
+
+## Stage 2 – Data & Semantic Matching
+
+- [ ] **Add CSV / Sheet ingestion**  
+       **Prompt:** Load CSV with columns: Category, ContentOrLink, Marking Tutor Name, Marking Tutor Email, Seminar Tutor Name, Seminar Tutor Email, Unit Chair Name, Unit Chair Email. Provide in-memory list of dicts + reload function.  
+       **Test:** Sample 3-row file loads; missing optional fields handled.  
+       **Docs:** Update `STATUS.md`.
+
+- [ ] **Integrate OpenAI embeddings (abstraction)**  
+       **Prompt:** Add embedding service with function `embed_texts(list[str]) -> list[list[float]]` using `text-embedding-3-small`; store vectors on records. Mock-friendly design.  
+       **Test:** All records receive non-empty embedding vectors.  
+       **Docs:** Update `STATUS.md`.
+
+- [ ] **Semantic search in /ask**  
+       **Prompt:** Update `/ask` to embed question, compute cosine similarity, return best match if ≥ ANSWER_THRESHOLD.  
+       **Test:** Query similar to known post returns that post + similarity.  
+       **Docs:** Update `STATUS.md`.
+
+- [ ] **Category inference & escalation**  
+       **Prompt:** If top similarity < ANSWER_THRESHOLD, aggregate by category; if best < CATEGORY_THRESHOLD → category `unknown`. Return escalation payload with available roles; avoid fabrication.  
+       **Test:** Unrelated question triggers escalation; weak signal yields `unknown`.  
+       **Docs:** Update `STATUS.md`.
+
+- [ ] **Minimal request logging**  
+       **Prompt:** Append JSONL entries: timestamp, question, outcome (`match|escalation`), top_similarity, category_guess.  
+       **Test:** Two queries → two well-formed lines.  
+       **Docs:** Update `STATUS.md`.
+
+---
+
+## Stage 3 – Logging & Analytics Expansion
+
+- [ ] **Structured logging upgrade**  
+       **Prompt:** Extract logging into module; add answer_type, roles_offered count. Optional persistence (SQLite/CSV rotation).  
+       **Test:** 3 queries logged with new fields.  
+       **Docs:** Update `STATUS.md`.
+
+- [ ] **/stats endpoint**  
+       **Prompt:** Return total_questions, by_outcome, by_category (top 5), unresolved_escalations (placeholder).  
+       **Test:** Simulated queries → correct aggregates.  
+       **Docs:** Update `STATUS.md`.
 
 ---
 
 ## Stage 4 – Microsoft Teams Integration
 
-- [ ] **Deploy bot to Teams**  
-      **Prompt:** Create a Microsoft Teams bot or incoming webhook integration. Connect `/ask` endpoint, receive messages from Teams, and return responses to chat.  
-      **Test:** Send a question from Teams → verify bot responds and logs updated.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [ ] **Teams adapter**  
+       **Prompt:** Simple handler translating Teams message payload to internal `/ask` call & formatting response.  
+       **Test:** Simulated Teams POST → formatted reply.  
+       **Docs:** Update `STATUS.md`.
 
-- [ ] **Test end-to-end**  
-      **Prompt:** Test full flow: student asks question in Teams → bot classifies, matches post, or escalates to tutor → response appears in Teams → logs updated.  
-      **Test:** Simulate 3 different questions → confirm correct matching/escalation.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [ ] **End-to-end scripted test**  
+       **Prompt:** Script sends: (match, category escalation, unknown) scenarios.  
+       **Test:** Output matches expected outcomes.  
+       **Docs:** Update `STATUS.md`.
 
 ---
 
-## Stage 5 – Future Enhancements
+## Stage 5 – Enhancements & Fallbacks
 
-- [ ] **Add optional AI fallback generation**  
-      **Prompt:** If no matching post exists, generate answer using GPT API with prompt: "Provide a helpful and safe answer to the following student question: {question}".  
-      **Test:** Ask a completely new question → verify AI generates plausible fallback answer.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [ ] **Optional AI fallback generation**  
+       **Prompt:** If enabled via `ENABLE_FALLBACK`, generate GPT answer with safety preamble; set `source_type: fallback`.  
+       **Test:** Flag on + unmatched question returns fallback answer.  
+       **Docs:** Update `STATUS.md`.
 
-- [ ] **Allow unit chairs to add parameters**  
-      **Prompt:** Update sheet to include optional JSON parameters per post. Bot reads parameters and can use them in responses.  
-      **Test:** Add parameter like {"deadline": "2025-10-15"} → verify bot returns parameter when asked.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [ ] **Per-post parameters**  
+       **Prompt:** Support Parameters JSON column merged into match responses.  
+       **Test:** Row with `{ "deadline":"2025-10-15" }` returns deadline.  
+       **Docs:** Update `STATUS.md`.
 
-- [ ] **Add frontend dashboard (optional)**  
-      **Prompt:** Generate a simple React frontend to display sheet content, show logs, and allow unit chairs to edit categories and posts.  
-      **Test:** Load frontend → verify sheet data renders → edit row → verify backend updates.  
-      **Documentation Reminder:** Update `STATUS.md` and `gpt.md`.
+- [ ] **Frontend dashboard (optional)**  
+       **Prompt:** React page listing posts, logs summary, reload button.  
+       **Test:** Page loads data & triggers reload successfully.  
+       **Docs:** Update `STATUS.md`.
+
+---
+
+## General Testing Notes
+
+- Keep prior stage tests green
+- Prefer pytest + mocks (no live API in unit tests)
+- Embed services & OpenAI client must be mockable
+
+---
+
+## Documentation Reminders
+
+After each completed checklist item:
+
+1. Update `STATUS.md` with date + short note
+2. Update `gpt.md` ONLY if a core policy changes
+3. Commit with message: `stageX: <short-desc>`
