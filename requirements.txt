@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+# pydantic comes as a dependency of fastapi; no manual pin to avoid Python 3.12 issues.
+pytest
+httpx

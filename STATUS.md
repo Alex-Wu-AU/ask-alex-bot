@@ -8,7 +8,9 @@ High-level overview of staged progress. Detailed per-stage notes live in `stage_
 
 - **Status:** ✅ Complete
 - **Completed On:** [YYYY-MM-DD]
-- **Summary:** Minimal FastAPI app with `/ask` placeholder endpoint and base scaffolding established.
+- **Summary:** MMinimal FastAPI skeleton with /ask placeholder endpoint implemented.
+  Verified: POST /ask returns placeholder JSON; pytest tests passed.
+  Next: Stage 2 – ingestion + embeddings (not started).
 - **Tracker:** [stage1_status.md](stage_status/stage1_status.md)
 
 ---

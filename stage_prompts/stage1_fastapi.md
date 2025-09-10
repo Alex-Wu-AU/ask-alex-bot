@@ -13,7 +13,7 @@ High‑level policies come from gpt.md (authoritative answers first, staged deve
 Stage 1 goal: Minimal FastAPI service with a single /ask POST endpoint returning a deterministic placeholder JSON.
 No AI (OpenAI) integration yet. No logging layer, no database, no embeddings.
 Keep everything minimal, clean, and reproducible.
-Use Python 3.11. Manage dependencies with requirements.txt.
+Use Python 3.12. Manage dependencies with requirements.txt.
 Follow naming conventions: snake_case files, PascalCase models, UPPER_SNAKE constants.
 All responses must be idempotent—running generated commands twice should not break the workspace.
 ```
@@ -31,7 +31,7 @@ Act as a shell architect. Generate a list of shell commands to:
 2. Create folders: app tests
 3. Inside app create __init__.py and main.py (empty for now)
 4. Initialize git (if not already) – skip if .git exists
-5. (Optional) Create a virtual environment named .venv (Python 3.11)
+5. (Optional) Create a virtual environment named .venv (Python 3.12)
 Return ONLY a fenced bash block. No explanations.
 ```
 

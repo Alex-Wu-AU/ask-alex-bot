@@ -16,7 +16,7 @@ Single-source rules for the Ask Alex staged Q&A assistant: authoritative post an
 
 > **Keep lean until required.**
 
-- **Backend:** FastAPI (Python 3.11)
+- **Backend:** FastAPI (Python 3.12)
 - **Data (v1):** CSV / Google Sheet (future DB swap)
 - **AI:** OpenAI Chat + Embeddings
 - **Ops:** Docker (later CI)
